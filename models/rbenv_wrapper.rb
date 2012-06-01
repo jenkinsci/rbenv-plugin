@@ -12,11 +12,12 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
 
     if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/plugins/ruby-build") == 0
+      listener << "Install ruby-build\n"
       launcher.execute("bash", "-c", "mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone git://github.com/sstephenson/ruby-build.git", {out: listener})
     end
 
     if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/versions/#{@version}") == 0
-      listener << "Install #{@version}"
+      listener << "Install #{@version}\n"
       launcher.execute("bash", "-c", "rbenv install #{@version}")
     end
 
