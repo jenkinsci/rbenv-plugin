@@ -3,6 +3,8 @@ require 'stringio'
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   display_name "Rbenv build wrapper"
 
+  attr_accessor :version
+
   def initialize(attrs = {})
     @version = attrs['version']
   end
