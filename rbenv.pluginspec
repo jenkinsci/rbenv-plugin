@@ -1,7 +1,7 @@
 Jenkins::Plugin::Specification.new do |plugin|
   plugin.name = "rbenv"
   plugin.display_name = "Rbenv Plugin"
-  plugin.version = '0.0.1'
+  plugin.version = '0.0.2'
   plugin.description = 'TODO: enter description here'
 
   # You should create a wiki-page for your plugin when you publish it, see

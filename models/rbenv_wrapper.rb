@@ -27,9 +27,11 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     list = StringIO.new
     launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem list", {out: list})
-    unless list.include? 'bundler'
-      listener << "Install bundler\n"
-      launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem install bundler")
+    %w(bundler rake).each do |gem|
+      unless list.include? gem
+        listener << "Install #{gem}\n"
+        launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem install #{gem}")
+      end
     end
 
     build.env['PATH'] = "~/.rbenv/versions/#{@version}/bin:$PATH"
