@@ -17,7 +17,7 @@ Jenkins::Plugin::Specification.new do |plugin|
   #  :github => 'myuser/rbenv-plugin' (without myuser it defaults to jenkinsci)
   #  :git => 'git://repo.or.cz/rbenv-plugin.git'
   #  :svn => 'https://svn.jenkins-ci.org/trunk/hudson/plugins/rbenv-plugin'
-  plugin.uses_repository :github => "rbenv-plugin"
+  plugin.uses_repository :github => "jenkins-rbenv-plugin"
 
   # This is a required dependency for every ruby plugin.
   plugin.depends_on 'ruby-runtime', '0.10'
