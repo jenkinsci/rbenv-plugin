@@ -22,7 +22,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/versions/#{@version}") == 0
       listener << "Install #{@version}\n"
-      launcher.execute("bash", "-c", "rbenv install #{@version}")
+      launcher.execute("bash", "-c", "~/.rbenv/bin/rbenv install #{@version}")
     end
 
     list = StringIO.new
