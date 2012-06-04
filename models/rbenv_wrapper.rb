@@ -1,3 +1,5 @@
+require 'stringio'
+
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   display_name "Rbenv build wrapper"
 
@@ -19,6 +21,13 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/versions/#{@version}") == 0
       listener << "Install #{@version}\n"
       launcher.execute("bash", "-c", "rbenv install #{@version}")
+    end
+
+    list = StringIO.new
+    launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem list", {out: list})
+    unless list.include? 'bundler'
+      listener << "Install bundler\n"
+      launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem install bundler")
     end
 
     build.env['PATH'] = "~/.rbenv/versions/#{@version}/bin:$PATH"
