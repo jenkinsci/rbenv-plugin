@@ -3,6 +3,9 @@ require 'stringio'
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   display_name "Rbenv build wrapper"
 
+  RUBY_BUILD_PATH = "git://github.com/sstephenson/ruby-build.git"
+  RBENV_PATH = "git://github.com/sstephenson/rbenv.git"
+
   attr_accessor :version
 
   def initialize(attrs = {})
@@ -10,30 +13,32 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   end
 
   def setup(build, launcher, listener)
-    if launcher.execute("bash", "-c", "test ! -d ~/.rbenv") == 0
+    install_path = "~/.rbenv/versions/#{@version}"
+
+    unless FileTest.directory? "~/.rbenv"
       listener << "Install rbenv\n"
-      launcher.execute("bash", "-c", "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv", {out: listener})
+      launcher.execute("bash", "-c", "git clone #{RBENV_PATH} ~/.rbenv", {out: listener})
     end
 
-    if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/plugins/ruby-build") == 0
+    unless FileTest.directory? "~/.rbenv/plugins/ruby-build"
       listener << "Install ruby-build\n"
-      launcher.execute("bash", "-c", "mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone git://github.com/sstephenson/ruby-build.git", {out: listener})
+      launcher.execute("bash", "-c", "mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone #{RUBY_BUILD_PATH}", {out: listener})
     end
 
-    if launcher.execute("bash", "-c", "test ! -d ~/.rbenv/versions/#{@version}") == 0
+    unless FileTest.directory? install_path
       listener << "Install #{@version}\n"
-      launcher.execute("bash", "-c", "~/.rbenv/bin/rbenv install #{@version}")
+      launcher.execute("bash", "-c", "~/.rbenv/bin/rbenv install #{@version}", {out: listener})
     end
 
     list = StringIO.new
-    launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem list", {out: list})
+    launcher.execute("bash", "-c", "#{install_path}/bin/gem list", {out: list})
     %w(bundler rake).each do |gem|
       unless list.include? gem
         listener << "Install #{gem}\n"
-        launcher.execute("bash", "-c", "~/.rbenv/versions/#{@version}/bin/gem install #{gem}")
+        launcher.execute("bash", "-c", "#{install_path}/bin/gem install #{gem}", {out: listener})
       end
     end
 
-    build.env['PATH'] = "~/.rbenv/versions/#{@version}/bin:$PATH"
+    build.env['PATH'] = "#{install_path}/bin:$PATH"
   end
 end
