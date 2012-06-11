@@ -15,25 +15,27 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   def setup(build, launcher, listener)
     install_path = "~/.rbenv/versions/#{@version}"
 
-    unless FileTest.directory? "~/.rbenv"
+    unless FileTest.directory? File.expand_path("~/.rbenv")
       listener << "Install rbenv\n"
       launcher.execute("bash", "-c", "git clone #{RBENV_PATH} ~/.rbenv", {out: listener})
     end
 
-    unless FileTest.directory? "~/.rbenv/plugins/ruby-build"
+    unless FileTest.directory? File.expand_path("~/.rbenv/plugins/ruby-build")
       listener << "Install ruby-build\n"
       launcher.execute("bash", "-c", "mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone #{RUBY_BUILD_PATH}", {out: listener})
     end
 
-    unless FileTest.directory? install_path
+    unless FileTest.directory? File.expand_path(install_path)
       listener << "Install #{@version}\n"
       launcher.execute("bash", "-c", "~/.rbenv/bin/rbenv install #{@version}", {out: listener})
     end
 
     list = StringIO.new
     launcher.execute("bash", "-c", "#{install_path}/bin/gem list", {out: list})
+    gems = list.read
+
     %w(bundler rake).each do |gem|
-      unless list.include? gem
+      unless gems.include? gem
         listener << "Install #{gem}\n"
         launcher.execute("bash", "-c", "#{install_path}/bin/gem install #{gem}", {out: listener})
       end
