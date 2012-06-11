@@ -32,10 +32,8 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     list = StringIO.new
     launcher.execute("bash", "-c", "#{install_path}/bin/gem list", {out: list})
-    gems = list.read
-
     %w(bundler rake).each do |gem|
-      unless gems.include? gem
+      unless list.string.include? gem
         listener << "Install #{gem}\n"
         launcher.execute("bash", "-c", "#{install_path}/bin/gem install #{gem}", {out: listener})
       end
