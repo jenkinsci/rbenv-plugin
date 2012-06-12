@@ -39,6 +39,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       end
     end
 
+    build.env['RBENV_VERSION'] = @version
     build.env['PATH'] = "#{install_path}/bin:$PATH"
   end
 end
