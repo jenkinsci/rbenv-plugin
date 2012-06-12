@@ -10,6 +10,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
   def initialize(attrs = {})
     @version = attrs['version']
+    @gem_list = attrs['gem_list']
   end
 
   def setup(build, launcher, listener)
@@ -32,7 +33,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     list = StringIO.new
     launcher.execute("bash", "-c", "#{install_path}/bin/gem list", {out: list})
-    %w(bundler rake).each do |gem|
+    (@gem_list || 'bundler,rake').split(',').each do |gem|
       unless list.string.include? gem
         listener << "Install #{gem}\n"
         launcher.execute("bash", "-c", "#{install_path}/bin/gem install #{gem}", {out: listener})
