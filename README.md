@@ -9,3 +9,26 @@
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Building the plugin from source
+
+Follow these steps if you are interested in hacking on the plugin.
+
+Find a version of JRuby to install via `rbenv-install -l`
+
+Install JRuby
+
+    rbenv install jruby-1.6.7
+    rbenv local jruby-1.6.7
+
+Install the jpi gem
+
+    gem install jpi
+    rbenv rehash
+
+Build the plugin
+
+    jpi build
+    
+
+Look at [Getting Started with Ruby Plugins](https://github.com/jenkinsci/jenkins.rb/wiki/Getting-Started-With-Ruby-Plugins) to get up to speed on things.
