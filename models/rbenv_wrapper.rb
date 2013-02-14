@@ -42,7 +42,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
 
     build.env['RBENV_VERSION'] = @version
-    build.env['PATH'] = "#{install_path}/bin:$PATH"
+    build.env['PATH'] = "#{install_path}/bin:#{build.env['PATH']}"
   end
 
   def directory_exists?(path)
