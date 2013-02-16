@@ -1,3 +1,3 @@
-source :rubygems
+source 'https://rubygems.org'
 
-gem "jenkins-plugin-runtime", "~> 0.2.0"
+gem 'jenkins-plugin-runtime'
