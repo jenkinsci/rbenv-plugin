@@ -15,7 +15,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
   def setup(build, launcher, listener)
     @launcher = launcher
-    install_path = "~/.rbenv/versions/#{@version}"
+    install_path = File.expand_path("~/.rbenv/versions/#{@version}")
 
     unless directory_exists?("~/.rbenv")
       listener << "Install rbenv\n"
@@ -42,7 +42,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
 
     build.env['RBENV_VERSION'] = @version
-    build.env['PATH'] = "#{install_path}/bin:#{build.env['PATH']}"
+    build.env['PATH+RBENV'] = "#{install_path}/bin"
   end
 
   def directory_exists?(path)
