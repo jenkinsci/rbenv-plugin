@@ -17,19 +17,19 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     @launcher = launcher
     install_path = "$HOME/.rbenv/versions/#{@version}"
 
-    unless directory_exists?("~/.rbenv")
+    unless directory_exists?("$HOME/.rbenv")
       listener << "Install rbenv\n"
-      launcher.execute("bash", "-c", "git clone #{RBENV_PATH} ~/.rbenv", {out: listener})
+      launcher.execute("bash", "-c", "git clone #{RBENV_PATH} $HOME/.rbenv", {out: listener})
     end
 
-    unless directory_exists?("~/.rbenv/plugins/ruby-build")
+    unless directory_exists?("$HOME/.rbenv/plugins/ruby-build")
       listener << "Install ruby-build\n"
-      launcher.execute("bash", "-c", "mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone #{RUBY_BUILD_PATH}", {out: listener})
+      launcher.execute("bash", "-c", "mkdir -p $HOME/.rbenv/plugins && cd $HOME/.rbenv/plugins && git clone #{RUBY_BUILD_PATH}", {out: listener})
     end
 
     unless directory_exists?(install_path)
       listener << "Install #{@version}\n"
-      launcher.execute("bash", "-c", "~/.rbenv/bin/rbenv install #{@version}", {out: listener})
+      launcher.execute("bash", "-c", "$HOME/.rbenv/bin/rbenv install #{@version}", {out: listener})
     end
 
     list = StringIO.new
