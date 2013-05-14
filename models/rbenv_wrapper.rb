@@ -28,6 +28,11 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
 
     unless directory_exists?(install_path)
+      # To update definitions, update rbenv and ruby-build before installing ruby
+      listener << "Update rbenv\n"
+      launcher.execute("bash", "-c", "cd $HOME/.rbenv && git pull")
+      listener << "Update ruby-build\n"
+      launcher.execute("bash", "-c", "cd $HOME/.rbenv/plugins/ruby-build && git pull")
       listener << "Install #{@version}\n"
       launcher.execute("bash", "-c", "$HOME/.rbenv/bin/rbenv install #{@version}", {out: listener})
     end
