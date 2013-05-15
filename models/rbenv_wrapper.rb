@@ -1,8 +1,10 @@
 require 'stringio'
+require 'shellwords'
 
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   display_name "Rbenv build wrapper"
 
+  DEFAULT_RBENV_ROOT = "$HOME/.rbenv"
   RUBY_BUILD_PATH = "git://github.com/sstephenson/ruby-build.git"
   RBENV_PATH = "git://github.com/sstephenson/rbenv.git"
 
@@ -15,42 +17,67 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
   def setup(build, launcher, listener)
     @launcher = launcher
-    install_path = "$HOME/.rbenv/versions/#{@version}"
+    install_path = "#{rbenv_root}/versions/#{@version}"
 
-    unless directory_exists?("$HOME/.rbenv")
+    unless directory_exists?(rbenv_root)
       listener << "Install rbenv\n"
-      launcher.execute("bash", "-c", "git clone #{RBENV_PATH} $HOME/.rbenv", {out: listener})
+      run("git clone #{RBENV_PATH.shellescape} #{rbenv_root.shellescape}", {out: listener})
     end
 
-    unless directory_exists?("$HOME/.rbenv/plugins/ruby-build")
+    plugins_path = "#{rbenv_root}/plugins"
+    ruby_build_path = "#{plugins_path}/ruby-build"
+    unless directory_exists?(ruby_build_path)
       listener << "Install ruby-build\n"
-      launcher.execute("bash", "-c", "mkdir -p $HOME/.rbenv/plugins && cd $HOME/.rbenv/plugins && git clone #{RUBY_BUILD_PATH}", {out: listener})
+      run("git clone #{RUBY_BUILD_PATH.shellescape} #{ruby_build_path.shellescape}", {out: listener})
     end
 
+    rbenv_bin = "#{rbenv_root}/bin/rbenv"
     unless directory_exists?(install_path)
       # To update definitions, update rbenv and ruby-build before installing ruby
       listener << "Update rbenv\n"
-      launcher.execute("bash", "-c", "cd $HOME/.rbenv && git pull")
+      run("cd #{rbenv_root.shellescape} && git pull")
       listener << "Update ruby-build\n"
-      launcher.execute("bash", "-c", "cd $HOME/.rbenv/plugins/ruby-build && git pull")
+      run("cd #{ruby_build_path.shellescape} && git pull")
       listener << "Install #{@version}\n"
-      launcher.execute("bash", "-c", "$HOME/.rbenv/bin/rbenv install #{@version}", {out: listener})
+      run("#{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
     end
 
-    list = StringIO.new
-    launcher.execute("bash", "-c", "#{install_path}/bin/gem list", {out: list})
+    gem_bin = "#{install_path}/bin/gem"
+    list = capture("#{gem_bin.shellescape} list").strip.split
     (@gem_list || 'bundler,rake').split(',').each do |gem|
-      unless list.string.include? gem
+      unless list.include? gem
         listener << "Install #{gem}\n"
-        launcher.execute("bash", "-c", "#{install_path}/bin/gem install #{gem}", {out: listener})
+        run("#{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
+        run("#{rbenv_bin.shellescape} rehash", {out: listener})
       end
     end
 
     build.env['RBENV_VERSION'] = @version
-    build.env['PATH+RBENV'] = "#{install_path}/bin"
+    build.env['PATH+RBENV'] = "#{rbenv_root}/shims"
   end
 
   def directory_exists?(path)
-    @launcher.execute("bash", "-c", "test -d #{path}") == 0
+    execute("test -d #{path}") == 0
+  end
+
+  def rbenv_root
+    @rbenv_root ||= capture("echo \"${RBENV_ROOT:-#{DEFAULT_RBENV_ROOT}}\"").strip
+  end
+
+  def capture(command, options={})
+    out = StringIO.new
+    run(command, options.merge({out: out}))
+    out.rewind
+    out.read
+  end
+
+  def run(command, options={})
+    if execute(command, options) != 0
+      raise(RuntimeError.new("failed: #{command.inspect}"))
+    end
+  end
+
+  def execute(command, options={})
+    @launcher.execute("bash", "-c", command, options)
   end
 end
