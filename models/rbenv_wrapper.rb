@@ -17,8 +17,6 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
   def setup(build, launcher, listener)
     @launcher = launcher
-    install_path = "#{rbenv_root}/versions/#{@version}"
-
     unless directory_exists?(rbenv_root)
       listener << "Install rbenv\n"
       run("git clone #{RBENV_PATH.shellescape} #{rbenv_root.shellescape}", {out: listener})
@@ -32,7 +30,13 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
 
     rbenv_bin = "#{rbenv_root}/bin/rbenv"
-    unless directory_exists?(install_path)
+
+    # Respect local Ruby version if defined in the workspace
+    local_version = capture("cd #{build.workspace.to_s.shellescape} && #{rbenv_bin.shellescape} local || true").strip
+    @version = local_version unless local_version.empty?
+
+    versions = capture("#{rbenv_bin.shellescape} versions --bare").strip.split
+    unless versions.include?(@version)
       # To update definitions, update rbenv and ruby-build before installing ruby
       listener << "Update rbenv\n"
       run("cd #{rbenv_root.shellescape} && git pull")
@@ -42,7 +46,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       run("#{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
     end
 
-    gem_bin = "#{install_path}/bin/gem"
+    gem_bin = "#{rbenv_root}/versions/#{@version}/bin/gem"
     list = capture("#{gem_bin.shellescape} list").strip.split
     (@gem_list || 'bundler,rake').split(',').each do |gem|
       unless list.include? gem
