@@ -46,12 +46,12 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       run("#{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
     end
 
-    gem_bin = "#{rbenv_root}/versions/#{@version}/bin/gem"
-    list = capture("#{gem_bin.shellescape} list").strip.split
+    gem_bin = "#{rbenv_root}/shims/gem"
+    list = capture("RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
     (@gem_list || 'bundler,rake').split(',').each do |gem|
       unless list.include? gem
         listener << "Install #{gem}\n"
-        run("#{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
+        run("RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
         run("#{rbenv_bin.shellescape} rehash", {out: listener})
       end
     end
