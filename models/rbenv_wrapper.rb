@@ -32,7 +32,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     rbenv_bin = "#{rbenv_root}/bin/rbenv"
 
     # Respect local Ruby version if defined in the workspace
-    local_version = capture("cd #{build.workspace.to_s.shellescape} && #{rbenv_bin.shellescape} local || true").strip
+    local_version = capture("cd #{build.workspace.to_s.shellescape} && #{rbenv_bin.shellescape} local 2>/dev/null || true").strip
     @version = local_version unless local_version.empty?
 
     versions = capture("#{rbenv_bin.shellescape} versions --bare").strip.split
