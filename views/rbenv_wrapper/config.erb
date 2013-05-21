@@ -1,9 +1,9 @@
 <%
 f = taglib("/lib/form")
-f.entry(:title => 'Version', :field => 'version', :description => "RUBY, such as '1.9.3-p194'") do
+f.entry(:title => "The Ruby version", :field => "version") do
   f.textbox
 end
-f.entry(:title => 'Preinstall gem list', :field => 'gem_list', :description => "ex. bundler,rake") do
-  f.textbox(:value => 'bundler,rake')
+f.entry(:title => "Preinstall gem list", :field => "gem_list") do
+  f.textbox(:value => "bundler,rake")
 end
 %>
