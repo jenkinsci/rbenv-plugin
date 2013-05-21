@@ -2,33 +2,40 @@ require 'stringio'
 require 'shellwords'
 
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
-  display_name "Rbenv build wrapper"
-
-  DEFAULT_RBENV_ROOT = "$HOME/.rbenv"
-  RUBY_BUILD_PATH = "git://github.com/sstephenson/ruby-build.git"
-  RBENV_PATH = "git://github.com/sstephenson/rbenv.git"
+  display_name "rbenv build wrapper"
 
   attr_accessor :version
+  attr_accessor :gem_list
   attr_accessor :ignore_local_version
+  attr_accessor :rbenv_root
+  attr_accessor :rbenv_repository
+  attr_accessor :rbenv_revision
+  attr_accessor :ruby_build_repository
+  attr_accessor :ruby_build_revision
 
   def initialize(attrs = {})
     @version = attrs['version']
     @gem_list = attrs['gem_list']
     @ignore_local_version = attrs["ignore_local_version"]
+    @rbenv_root = attrs["rbenv_root"]
+    @rbenv_repository = attrs["rbenv_repository"]
+    @rbenv_revision = attrs["rbenv_revision"]
+    @ruby_build_repository = attrs["ruby_build_repository"]
+    @ruby_build_revision = attrs["ruby_build_revision"]
   end
 
   def setup(build, launcher, listener)
     @launcher = launcher
     unless directory_exists?(rbenv_root)
       listener << "Install rbenv\n"
-      run("git clone #{RBENV_PATH.shellescape} #{rbenv_root.shellescape}", {out: listener})
+      run(scm_checkout(rbenv_repository, rbenv_revision, rbenv_root), {out: listener})
     end
 
     plugins_path = "#{rbenv_root}/plugins"
     ruby_build_path = "#{plugins_path}/ruby-build"
     unless directory_exists?(ruby_build_path)
       listener << "Install ruby-build\n"
-      run("git clone #{RUBY_BUILD_PATH.shellescape} #{ruby_build_path.shellescape}", {out: listener})
+      run(scm_checkout(ruby_build_repository, ruby_build_revision, ruby_build_path), {out: listener})
     end
 
     rbenv_bin = "#{rbenv_root}/bin/rbenv"
@@ -39,37 +46,35 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       @version = local_version unless local_version.empty?
     end
 
-    versions = capture("#{rbenv_bin.shellescape} versions --bare").strip.split
+    versions = capture("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} versions --bare").strip.split
     unless versions.include?(@version)
       # To update definitions, update rbenv and ruby-build before installing ruby
       listener << "Update rbenv\n"
-      run("cd #{rbenv_root.shellescape} && git pull")
+      run(scm_sync(rbenv_repository, rbenv_revision, rbenv_root), {out: listener})
       listener << "Update ruby-build\n"
-      run("cd #{ruby_build_path.shellescape} && git pull")
+      run(scm_sync(ruby_build_repository, ruby_build_revision, ruby_build_path), {out: listener})
       listener << "Install #{@version}\n"
-      run("#{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
+      run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
     end
 
     gem_bin = "#{rbenv_root}/shims/gem"
-    list = capture("RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
+    list = capture("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
     (@gem_list || 'bundler,rake').split(',').each do |gem|
       unless list.include? gem
         listener << "Install #{gem}\n"
-        run("RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
-        run("#{rbenv_bin.shellescape} rehash", {out: listener})
+        run("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
+        run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
       end
     end
 
+    build.env["RBENV_ROOT"] = rbenv_root
     build.env['RBENV_VERSION'] = @version
     build.env['PATH+RBENV'] = "#{rbenv_root}/shims"
   end
 
+  private
   def directory_exists?(path)
     execute("test -d #{path}") == 0
-  end
-
-  def rbenv_root
-    @rbenv_root ||= capture("echo \"${RBENV_ROOT:-#{DEFAULT_RBENV_ROOT}}\"").strip
   end
 
   def capture(command, options={})
@@ -87,5 +92,22 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
   def execute(command, options={})
     @launcher.execute("bash", "-c", command, options)
+  end
+
+  def scm_checkout(repository, revision, destination)
+    execute = []
+    execute << "git clone #{repository.shellescape} #{destination.shellescape}"
+    execute << "cd #{destination.shellescape}"
+    execute << "git checkout #{revision.shellescape}"
+    execute.join(" && ")
+  end
+
+  def scm_sync(repository, revision, destination)
+    execute = []
+    execute << "cd #{destination.shellescape}"
+    execute << "git fetch"
+    execute << "git fetch --tags"
+    execute << "git reset --hard #{revision}"
+    execute.join(" && ")
   end
 end
