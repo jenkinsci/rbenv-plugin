@@ -15,5 +15,21 @@ f.advanced do
   f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
     f.textbox(:default => "$HOME/.rbenv")
   end
+  f.entry(:title => "rbenv.git", :field => "rbenv_repository") do
+    f.textbox(:default => "git://github.com/sstephenson/rbenv.git")
+  end
+  f.advanced do
+    f.entry(:title => "branch", :field => "rbenv_revision") do
+      f.textbox(:default => "master")
+    end
+  end
+  f.entry(:title => "ruby-build.git", :field => "ruby_build_repository") do
+    f.textbox(:default => "git://github.com/sstephenson/ruby-build.git")
+  end
+  f.advanced do
+    f.entry(:title => "branch", :field => "ruby_build_revision") do
+      f.textbox(:default => "master")
+    end
+  end
 end
 %>
