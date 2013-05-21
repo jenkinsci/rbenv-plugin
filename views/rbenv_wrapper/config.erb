@@ -9,6 +9,11 @@ f.advanced do
   end
 end
 f.entry(:title => "Preinstall gem list", :field => "gem_list") do
-  f.textbox(:value => "bundler,rake")
+  f.textbox(:default => "bundler,rake")
+end
+f.advanced do
+  f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
+    f.textbox(:default => "$HOME/.rbenv")
+  end
 end
 %>
