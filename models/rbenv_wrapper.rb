@@ -9,10 +9,12 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   RBENV_PATH = "git://github.com/sstephenson/rbenv.git"
 
   attr_accessor :version
+  attr_accessor :ignore_local_version
 
   def initialize(attrs = {})
     @version = attrs['version']
     @gem_list = attrs['gem_list']
+    @ignore_local_version = attrs["ignore_local_version"]
   end
 
   def setup(build, launcher, listener)
@@ -31,9 +33,11 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     rbenv_bin = "#{rbenv_root}/bin/rbenv"
 
-    # Respect local Ruby version if defined in the workspace
-    local_version = capture("cd #{build.workspace.to_s.shellescape} && #{rbenv_bin.shellescape} local 2>/dev/null || true").strip
-    @version = local_version unless local_version.empty?
+    unless @ignore_local_version
+      # Respect local Ruby version if defined in the workspace
+      local_version = capture("cd #{build.workspace.to_s.shellescape} && #{rbenv_bin.shellescape} local 2>/dev/null || true").strip
+      @version = local_version unless local_version.empty?
+    end
 
     versions = capture("#{rbenv_bin.shellescape} versions --bare").strip.split
     unless versions.include?(@version)
