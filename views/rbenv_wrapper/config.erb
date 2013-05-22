@@ -1,11 +1,11 @@
 <%
 f = taglib("/lib/form")
 f.entry(:title => "The Ruby version", :field => "version") do
-  f.textbox
+  f.textbox(:default => "1.9.3-p429")
 end
 f.advanced do
   f.entry(:title => "Ignore local version", :field => "ignore_local_version") do
-    f.checkbox
+    f.checkbox(:default => false)
   end
 end
 f.entry(:title => "Preinstall gem list", :field => "gem_list") do

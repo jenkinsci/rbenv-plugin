@@ -2,7 +2,24 @@ require 'stringio'
 require 'shellwords'
 
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
+  class << self
+    def transient?(symbol)
+      # return true for a variable which should not be serialized
+      false
+    end
+  end
+
   display_name "rbenv build wrapper"
+
+  # FIXME: these values should be shared between views/rbenv_wrapper/config.erb
+  DEFAULT_VERSION = "1.9.3p429"
+  DEFAULT_GEM_LIST = "bundler,rake"
+  DEFAULT_IGNORE_LOCAL_VERSION = false
+  DEFAULT_RBENV_ROOT = "$HOME/.rbenv"
+  DEFAULT_RBENV_REPOSITORY = "git://github.com/sstephenson/rbenv.git"
+  DEFAULT_RBENV_REVISION = "master"
+  DEFAULT_RUBY_BUILD_REPOSITORY = "git://github.com/sstephenson/ruby-build.git"
+  DEFAULT_RUBY_BUILD_REVISION = "master"
 
   attr_accessor :version
   attr_accessor :gem_list
@@ -13,15 +30,14 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   attr_accessor :ruby_build_repository
   attr_accessor :ruby_build_revision
 
-  def initialize(attrs = {})
-    @version = attrs['version']
-    @gem_list = attrs['gem_list']
-    @ignore_local_version = attrs["ignore_local_version"]
-    @rbenv_root = attrs["rbenv_root"]
-    @rbenv_repository = attrs["rbenv_repository"]
-    @rbenv_revision = attrs["rbenv_revision"]
-    @ruby_build_repository = attrs["ruby_build_repository"]
-    @ruby_build_revision = attrs["ruby_build_revision"]
+  # The default values should be set on both instantiation and deserialization.
+  def initialize(attrs={})
+    load_attributes!(attrs)
+  end
+
+  # Will be invoked by jruby-xstream after deserialization from configuration file.
+  def read_completed()
+    load_attributes!
   end
 
   def setup(build, launcher, listener)
@@ -113,5 +129,22 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     execute << "git fetch --tags"
     execute << "git reset --hard #{revision}"
     execute.join(" && ")
+  end
+
+  def load_attributes!(attrs={})
+    @version = attribute(attrs.fetch("version", @version), DEFAULT_VERSION)
+    @gem_list = attribute(attrs.fetch("gem_list", @gem_list), DEFAULT_GEM_LIST)
+    @ignore_local_version = attribute(attrs.fetch("ignore_local_version", @ignore_local_version), DEFAULT_IGNORE_LOCAL_VERSION)
+    @rbenv_root = attribute(attrs.fetch("rbenv_root", @rbenv_root), DEFAULT_RBENV_ROOT)
+    @rbenv_repository = attribute(attrs.fetch("rbenv_repository", @rbenv_repository), DEFAULT_RBENV_REPOSITORY)
+    @rbenv_revision = attribute(attrs.fetch("rbenv_revision", @rbenv_revision), DEFAULT_RBENV_REVISION)
+    @ruby_build_repository = attribute(attrs.fetch("ruby_build_repository", @ruby_build_repository), DEFAULT_RUBY_BUILD_REPOSITORY)
+    @ruby_build_revision = attribute(attrs.fetch("ruby_build_revision", @ruby_build_revision), DEFAULT_RUBY_BUILD_REVISION)
+  end
+
+  # Jenkins may return empty string as attribute value which we must ignore
+  def attribute(value, default_value=nil)
+    str = value.to_s
+    not(str.empty?) ? str : default_value
   end
 end
