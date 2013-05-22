@@ -63,13 +63,17 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       unless list.include? gem
         listener << "Install #{gem}\n"
         run("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
-        run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
       end
     end
 
+    # Run rehash everytime to update binstubs
+    run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
+
     build.env["RBENV_ROOT"] = rbenv_root
     build.env['RBENV_VERSION'] = @version
-    build.env['PATH+RBENV'] = "#{rbenv_root}/shims"
+
+    # Set ${RBENV_ROOT}/bin in $PATH to allow invoke rbenv from shell
+    build.env['PATH+RBENV'] = ["#{rbenv_root}/bin".shellescape, "#{rbenv_root}/shims".shellescape].join(":")
   end
 
   private
