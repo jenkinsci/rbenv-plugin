@@ -1,7 +1,7 @@
 Jenkins::Plugin::Specification.new do |plugin|
   plugin.name = "rbenv"
   plugin.display_name = "rbenv plugin"
-  plugin.version = '0.0.11'
+  plugin.version = '0.0.12'
   plugin.description = 'Run Jenkins builds in rbenv'
 
   plugin.url = 'https://wiki.jenkins-ci.org/display/JENKINS/Rbenv+Plugin'
