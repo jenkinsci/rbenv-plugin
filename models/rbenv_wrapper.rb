@@ -87,9 +87,10 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
 
     build.env["RBENV_ROOT"] = rbenv_root
     build.env['RBENV_VERSION'] = @version
-
     # Set ${RBENV_ROOT}/bin in $PATH to allow invoke rbenv from shell
-    build.env['PATH+RBENV'] = ["#{rbenv_root}/bin".shellescape, "#{rbenv_root}/shims".shellescape].join(":")
+    build.env["PATH+RBENV_BIN"] = "#{rbenv_root}/bin"
+    # Set ${RBENV_ROOT}/shims in $PATH to allow invoke binstubs from shell
+    build.env["PATH+RBENV_SHIMS"] = "#{rbenv_root}/shims"
   end
 
   private
