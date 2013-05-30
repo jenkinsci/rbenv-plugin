@@ -2,10 +2,11 @@ require 'stringio'
 require 'shellwords'
 
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
+  TRANSIENT_INSTANCE_VARIABLES = [:launcher]
   class << self
     def transient?(symbol)
       # return true for a variable which should not be serialized
-      false
+      TRANSIENT_INSTANCE_VARIABLES.include?(symbol)
     end
   end
 
