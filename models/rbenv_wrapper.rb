@@ -73,6 +73,9 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
     end
 
+    # Run rehash everytime before invoking gem
+    run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
+
     gem_bin = "#{rbenv_root}/shims/gem"
     list = capture("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
     (@gem_list || 'bundler,rake').split(',').each do |gem|
@@ -82,7 +85,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       end
     end
 
-    # Run rehash everytime to update binstubs
+    # Run rehash everytime after invoking gem
     run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
 
     build.env["RBENV_ROOT"] = rbenv_root
