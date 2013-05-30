@@ -63,31 +63,34 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       @version = local_version unless local_version.empty?
     end
 
-    versions = capture("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} versions --bare").strip.split
-    unless versions.include?(@version)
-      # To update definitions, update rbenv and ruby-build before installing ruby
-      listener << "Update rbenv\n"
-      run(scm_sync(rbenv_repository, rbenv_revision, rbenv_root), {out: listener})
-      listener << "Update ruby-build\n"
-      run(scm_sync(ruby_build_repository, ruby_build_revision, ruby_build_path), {out: listener})
-      listener << "Install #{@version}\n"
-      run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
-    end
-
-    # Run rehash everytime before invoking gem
-    run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
-
-    gem_bin = "#{rbenv_root}/shims/gem"
-    list = capture("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
-    (@gem_list || 'bundler,rake').split(',').each do |gem|
-      unless list.include? gem
-        listener << "Install #{gem}\n"
-        run("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
+    # To avoid starting multiple build jobs, acquire lock during installation
+    synchronize("#{rbenv_root}.lock") do
+      versions = capture("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} versions --bare").strip.split
+      unless versions.include?(@version)
+        # To update definitions, update rbenv and ruby-build before installing ruby
+        listener << "Update rbenv\n"
+        run(scm_sync(rbenv_repository, rbenv_revision, rbenv_root), {out: listener})
+        listener << "Update ruby-build\n"
+        run(scm_sync(ruby_build_repository, ruby_build_revision, ruby_build_path), {out: listener})
+        listener << "Install #{@version}\n"
+        run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} install #{@version.shellescape}", {out: listener})
       end
-    end
 
-    # Run rehash everytime after invoking gem
-    run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
+      # Run rehash everytime before invoking gem
+      run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
+
+      gem_bin = "#{rbenv_root}/shims/gem"
+      list = capture("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} list").strip.split
+      (@gem_list || 'bundler,rake').split(',').each do |gem|
+        unless list.include? gem
+          listener << "Install #{gem}\n"
+          run("RBENV_ROOT=#{rbenv_root.shellescape} RBENV_VERSION=#{@version.shellescape} #{gem_bin.shellescape} install #{gem.shellescape}", {out: listener})
+        end
+      end
+
+      # Run rehash everytime after invoking gem
+      run("RBENV_ROOT=#{rbenv_root.shellescape} #{rbenv_bin.shellescape} rehash", {out: listener})
+    end
 
     build.env["RBENV_ROOT"] = rbenv_root
     build.env['RBENV_VERSION'] = @version
@@ -151,5 +154,32 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   def attribute(value, default_value=nil)
     str = value.to_s
     not(str.empty?) ? str : default_value
+  end
+
+  # pseudo semaphore
+  def synchronize(dir)
+    begin
+      lock_acquire(dir)
+      yield
+    ensure
+      lock_release(dir)
+    end
+  end
+
+  def lock_acquire(dir)
+    begin
+      run("mkdir #{dir.shellescape}")
+    rescue RuntimeError
+      sleep(8) # FIXME: should be configurable
+      retry
+    end
+  end
+
+  def lock_release(dir)
+    begin
+      run("rmdir #{dir.shellescape}")
+    rescue RuntimeError
+      run("rmdir #{dir.shellescape}")
+    end
   end
 end
