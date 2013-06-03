@@ -27,9 +27,8 @@ module Rbenv
       def sync
         execute = []
         execute << "cd #{destination.shellescape}"
-        execute << "git fetch"
-        execute << "git fetch --tags"
-        execute << "git reset --hard #{revision}"
+        execute << "git checkout #{revision.shellescape}"
+        execute << "git pull"
         execute.join(" && ")
       end
     end
