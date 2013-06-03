@@ -22,7 +22,7 @@ module Rbenv
 
       # To avoid starting multiple build jobs, acquire lock during installation
       synchronize("#{rbenv_root}.lock") do
-        versions = capture(rbenv("versions", "--bare"))
+        versions = capture(rbenv("versions", "--bare")).strip.split
         unless versions.include?(version)
           update!
           listener << "Installing #{version}..."
