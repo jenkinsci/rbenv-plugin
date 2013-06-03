@@ -21,14 +21,14 @@ Install JRuby
     rbenv install jruby-1.6.7
     rbenv local jruby-1.6.7
 
-Install the jpi gem
+Install the development gems
 
-    gem install jpi
+    bundle install
     rbenv rehash
 
 Build the plugin
 
-    jpi build
+    rake package
     
 
 Look at [Getting Started with Ruby Plugins](https://github.com/jenkinsci/jenkins.rb/wiki/Getting-Started-With-Ruby-Plugins) to get up to speed on things.
