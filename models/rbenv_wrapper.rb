@@ -1,4 +1,14 @@
+require "java"
 require "rbenv"
+require "rbenv/rack"
+require "jenkins/rack"
+
+class RbenvDescriptor < Jenkins::Model::DefaultDescriptor
+  include Jenkins::RackSupport
+  def call(env)
+    Rbenv::RackApplication.new.call(env)
+  end
+end
 
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   TRANSIENT_INSTANCE_VARIABLES = [:build, :launcher, :listener]
@@ -9,6 +19,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     end
   end
 
+  describe_as Java.hudson.tasks.BuildWrapper, :with => RbenvDescriptor
   display_name "rbenv build wrapper"
 
   # FIXME: these values should be shared between views/rbenv_wrapper/config.erb
