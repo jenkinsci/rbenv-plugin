@@ -1,7 +1,11 @@
 <%
 f = taglib("/lib/form")
 f.entry(:title => "The Ruby version", :field => "version") do
-  f.textbox(:default => "1.9.3-p429")
+  # Jenkins uses Java reflection to find "doCheck" methods implemented in the
+  # descendant of hudson.model.Descriptor.
+  # Since JRuby objects do not respond to Java refrections expectedly,
+  # we must specify :checkUrl explicitly as an option of textbox.
+  f.textbox(:default => "1.9.3-p429", :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkVersion?value='+encodeURIComponent(this.value)")
 end
 f.advanced do
   f.entry(:title => "Ignore local version", :field => "ignore_local_version") do
@@ -13,7 +17,7 @@ f.entry(:title => "Preinstall gem list", :field => "gem_list") do
 end
 f.advanced do
   f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
-    f.textbox(:default => "$HOME/.rbenv")
+    f.textbox(:default => "$HOME/.rbenv", :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkRbenvRoot?value='+encodeURIComponent(this.value)")
   end
   f.entry(:title => "rbenv.git", :field => "rbenv_repository") do
     f.textbox(:default => "git://github.com/sstephenson/rbenv.git")
