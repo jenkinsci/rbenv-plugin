@@ -8,9 +8,9 @@ class RbenvDescriptor < Jenkins::Model::DefaultDescriptor
   DEFAULT_GEM_LIST = "bundler,rake"
   DEFAULT_IGNORE_LOCAL_VERSION = false
   DEFAULT_RBENV_ROOT = "$HOME/.rbenv"
-  DEFAULT_RBENV_REPOSITORY = "git://github.com/sstephenson/rbenv.git"
+  DEFAULT_RBENV_REPOSITORY = "https://github.com/sstephenson/rbenv.git"
   DEFAULT_RBENV_REVISION = "master"
-  DEFAULT_RUBY_BUILD_REPOSITORY = "git://github.com/sstephenson/ruby-build.git"
+  DEFAULT_RUBY_BUILD_REPOSITORY = "https://github.com/sstephenson/ruby-build.git"
   DEFAULT_RUBY_BUILD_REVISION = "master"
 
   include Jenkins::RackSupport
