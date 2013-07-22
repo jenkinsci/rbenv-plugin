@@ -62,21 +62,52 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     Rbenv::Environment.new(self).setup!
   end
 
+  def to_hash()
+    {
+      "version" => @version,
+      "gem_list" => @gem_list,
+      "ignore_local_version" => @ignore_local_version,
+      "rbenv_root" => @rbenv_root,
+      "rbenv_repository" => @rbenv_repository,
+      "rbenv_revision" => @rbenv_revision,
+      "ruby_build_repository" => @ruby_build_repository,
+      "ruby_build_revision" => @ruby_build_revision,
+    }
+  end
+
   private
-  def from_hash(hash)
-    @version = attribute(hash.fetch("version", @version), DEFAULT_VERSION)
-    @gem_list = attribute(hash.fetch("gem_list", @gem_list), DEFAULT_GEM_LIST)
-    @ignore_local_version = attribute(hash.fetch("ignore_local_version", @ignore_local_version), DEFAULT_IGNORE_LOCAL_VERSION)
-    @rbenv_root = attribute(hash.fetch("rbenv_root", @rbenv_root), DEFAULT_RBENV_ROOT)
-    @rbenv_repository = attribute(hash.fetch("rbenv_repository", @rbenv_repository), DEFAULT_RBENV_REPOSITORY)
-    @rbenv_revision = attribute(hash.fetch("rbenv_revision", @rbenv_revision), DEFAULT_RBENV_REVISION)
-    @ruby_build_repository = attribute(hash.fetch("ruby_build_repository", @ruby_build_repository), DEFAULT_RUBY_BUILD_REPOSITORY)
-    @ruby_build_revision = attribute(hash.fetch("ruby_build_revision", @ruby_build_revision), DEFAULT_RUBY_BUILD_REVISION)
+  def from_hash(hash={})
+    @version = string(hash.fetch("version", @version), DEFAULT_VERSION)
+    @gem_list = string(hash.fetch("gem_list", @gem_list), DEFAULT_GEM_LIST)
+    @ignore_local_version = boolean(hash.fetch("ignore_local_version", @ignore_local_version), DEFAULT_IGNORE_LOCAL_VERSION)
+    @rbenv_root = string(hash.fetch("rbenv_root", @rbenv_root), DEFAULT_RBENV_ROOT)
+    @rbenv_repository = string(hash.fetch("rbenv_repository", @rbenv_repository), DEFAULT_RBENV_REPOSITORY)
+    @rbenv_revision = string(hash.fetch("rbenv_revision", @rbenv_revision), DEFAULT_RBENV_REVISION)
+    @ruby_build_repository = string(hash.fetch("ruby_build_repository", @ruby_build_repository), DEFAULT_RUBY_BUILD_REPOSITORY)
+    @ruby_build_revision = string(hash.fetch("ruby_build_revision", @ruby_build_revision), DEFAULT_RUBY_BUILD_REVISION)
   end
 
   # Jenkins may return empty string as attribute value which we must ignore
-  def attribute(value, default_value=nil)
-    str = value.to_s
-    not(str.empty?) ? str : default_value
+  def string(value, default_value=nil)
+    s = value.to_s
+    if s.empty?
+      default_value
+    else
+      s
+    end
+  end
+
+  def boolean(value, default_value=false)
+    if FalseClass === value or TrueClass === value
+      value
+    else
+      # rbenv plugin (<= 0.0.15) stores boolean values as String
+      case value.to_s
+      when /false/i then false
+      when /true/i  then true
+      else
+        default_value
+      end
+    end
   end
 end
