@@ -13,7 +13,7 @@ f.advanced do
   end
 end
 f.entry(:title => "Preinstall gem list", :field => "gem_list") do
-  f.textbox(:default => descriptor.class.const_get(:DEFAULT_PIP_LIST))
+  f.textbox(:default => descriptor.class.const_get(:DEFAULT_GEM_LIST))
 end
 f.advanced do
   f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
