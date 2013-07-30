@@ -22,9 +22,9 @@ end
 class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   TRANSIENT_INSTANCE_VARIABLES = [:build, :launcher, :listener]
   class << self
-    def transient?(symbol)
+    def transient?(x)
       # return true for a variable which should not be serialized
-      TRANSIENT_INSTANCE_VARIABLES.include?(symbol)
+      TRANSIENT_INSTANCE_VARIABLES.include?(x.to_s.to_sym)
     end
   end
 
