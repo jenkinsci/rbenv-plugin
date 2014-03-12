@@ -1,6 +1,6 @@
 # Jenkins rbenv plugin
 
-[![Build Status](https://travis-ci.org/jenkinsci/rbenv-plugin.png?branch=develop)](https://travis-ci.org/jenkinsci/rbenv-plugin)
+[![Build Status](https://travis-ci.org/jenkinsci/rbenv-plugin.png)](https://travis-ci.org/jenkinsci/rbenv-plugin)
 
 rbenv build wrapper for Jenkins
 
