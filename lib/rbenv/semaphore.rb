@@ -35,7 +35,7 @@ module Rbenv
       max = options.fetch(:release_max, DEFAULT_RELEASE_MAX)
       wait = options.fetch(:release_wait, DEFAULT_RELEASE_WAIT)
       max.times do
-        if test("rm -rf #{dir.shellescape}") 
+        if test("rm -rf #{dir.shellescape}")
           return true
         else
           sleep(wait)
