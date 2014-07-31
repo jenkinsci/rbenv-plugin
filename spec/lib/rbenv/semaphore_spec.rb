@@ -26,12 +26,8 @@ describe Rbenv::Semaphore do
   end
 
   it "should release lock" do
-    rbenv.should_receive(:test).with("rmdir true").and_return(true)
+    rbenv.should_receive(:test).with("rm -rf true").and_return(true)
     rbenv.release_lock("true")
   end
 
-  it "should not release lock" do
-    rbenv.should_receive(:test).with("rmdir false").and_return(false)
-    lambda { rbenv.release_lock("false", release_options) }.should raise_error(Rbenv::LockError)
-  end
 end
