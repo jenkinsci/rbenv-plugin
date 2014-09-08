@@ -24,7 +24,7 @@ module Rbenv
       wait = options.fetch(:acquire_wait, DEFAULT_ACQUIRE_WAIT)
       max.times do
         if test("mkdir #{dir.shellescape}")
-          run("touch #{workspace}/.rbenv_hold_lock")
+          run("touch #{workspace.shellescape}/.rbenv_hold_lock")
           return true
         else
           sleep(wait)
@@ -35,8 +35,8 @@ module Rbenv
 
     def release_lock(dir, workspace, options={})
       hold_lock = "#{workspace}/.rbenv_hold_lock"
-      if File.file?(hold_lock)
-        FileUtils.rm(hold_lock)
+      if test("test -f '#{hold_lock.shellescape}'")
+        run("rm #{hold_lock.shellescape}")
         unless test("rm -rf #{dir.shellescape}")
           raise(LockError.new("Lock is owned by this build but was unable to release"))
         end        
