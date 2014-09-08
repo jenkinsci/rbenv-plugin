@@ -28,6 +28,7 @@ describe Rbenv::Semaphore do
 
   it "should release lock" do
     File.should_receive(:file?).with("foobar/.rbenv_hold_lock").and_return(true)
+    FileUtils.should_receive(:rm).with("foobar/.rbenv_hold_lock")
     rbenv.should_receive(:test).with("rm -rf true").and_return(true)
     rbenv.release_lock("true","foobar")
   end

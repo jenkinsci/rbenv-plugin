@@ -34,10 +34,12 @@ module Rbenv
     end
 
     def release_lock(dir, workspace, options={})
-      if File.file?("#{workspace}/.rbenv_hold_lock")
-        test("rm -rf #{dir.shellescape}")
-      else
-        raise(LockError.new("Lock is owned by this build but was unable to release"))
+      hold_lock = "#{workspace}/.rbenv_hold_lock"
+      if File.file?(hold_lock)
+        FileUtils.rm(hold_lock)
+        unless test("rm -rf #{dir.shellescape}")
+          raise(LockError.new("Lock is owned by this build but was unable to release"))
+        end        
       end
     end
   end
