@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "rbenv/errors"
+require 'fileutils'
 
 module Rbenv
   module Semaphore
@@ -9,20 +10,21 @@ module Rbenv
     DEFAULT_RELEASE_MAX = 100
     DEFAULT_RELEASE_WAIT = 10
 
-    def synchronize(dir, options={})
+    def synchronize(dir, workspace, options={})
       begin
-        acquire_lock(dir, options)
+        acquire_lock(dir, workspace, options)
         yield
       ensure
-        release_lock(dir, options)
+        release_lock(dir, workspace, options)
       end
     end
 
-    def acquire_lock(dir, options={})
+    def acquire_lock(dir, workspace, options={})
       max = options.fetch(:acquire_max, DEFAULT_ACQUIRE_MAX)
       wait = options.fetch(:acquire_wait, DEFAULT_ACQUIRE_WAIT)
       max.times do
         if test("mkdir #{dir.shellescape}")
+          FileUtils.touch("#{workspace}/.rbenv_hold_lock")
           return true
         else
           sleep(wait)
@@ -31,17 +33,12 @@ module Rbenv
       raise(LockError.new("could not acquire lock in #{max * wait} seconds."))
     end
 
-    def release_lock(dir, options={})
-      max = options.fetch(:release_max, DEFAULT_RELEASE_MAX)
-      wait = options.fetch(:release_wait, DEFAULT_RELEASE_WAIT)
-      max.times do
-        if test("rm -rf #{dir.shellescape}")
-          return true
-        else
-          sleep(wait)
-        end
+    def release_lock(dir, workspace, options={})
+      if File.file?("#{workspace}/.rbenv_hold_lock")
+        test("rm -rf #{dir.shellescape}")
+      else
+        raise(LockError.new("Lock is owned by this build but was unable to release"))
       end
-      raise(LockError.new("could not release lock in #{max * wait} secs."))
     end
   end
 end

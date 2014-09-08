@@ -13,4 +13,8 @@ describe Rbenv::Environment do
   it 'should respond to #setup!' do
     rbenv.respond_to?(:setup!).should == true
   end
+
+  it 'should respond to #teardown!' do
+    rbenv.respond_to?(:teardown!).should == true
+  end
 end

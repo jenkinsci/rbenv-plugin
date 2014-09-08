@@ -61,6 +61,12 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     Rbenv::Environment.new(self).setup!
   end
 
+  def teardown(build,listener)
+    @build = build
+    @listener = listener
+    Rbenv::Environment.new(self).teardown!
+  end
+
   def to_hash()
     {
       "version" => @version,
