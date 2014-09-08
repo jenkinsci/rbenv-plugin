@@ -24,7 +24,7 @@ module Rbenv
       wait = options.fetch(:acquire_wait, DEFAULT_ACQUIRE_WAIT)
       max.times do
         if test("mkdir #{dir.shellescape}")
-          FileUtils.touch("#{workspace}/.rbenv_hold_lock")
+          File.open "#{workspace}/.rbenv_hold_lock", "w"
           return true
         else
           sleep(wait)
