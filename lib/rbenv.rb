@@ -111,7 +111,7 @@ module Rbenv
     end
 
     def plugin_path(name)
-      File.join(rbenv_root, "plugins", name)
+      File.join(rbenv_root, "plugins", name) 
     end
   end
 end
