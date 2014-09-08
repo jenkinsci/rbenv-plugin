@@ -17,7 +17,7 @@ describe Rbenv::Semaphore do
 
   it "should acquire lock" do
     rbenv.should_receive(:test).with("mkdir true").and_return(true)
-    File.should_receive(:open).with("foobar/.rbenv_hold_lock","w")
+    rbenv.should_receive(:run).with("touch foobar/.rbenv_hold_lock")
     rbenv.acquire_lock("true","foobar")
   end
 
