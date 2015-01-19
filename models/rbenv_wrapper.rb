@@ -4,7 +4,7 @@ require "rbenv/rack"
 require "jenkins/rack"
 
 class RbenvDescriptor < Jenkins::Model::DefaultDescriptor
-  DEFAULT_VERSION = "2.1.2"
+  DEFAULT_VERSION = "2.2.0"
   DEFAULT_GEM_LIST = "bundler,rake"
   DEFAULT_IGNORE_LOCAL_VERSION = false
   DEFAULT_RBENV_ROOT = "$HOME/.rbenv"
