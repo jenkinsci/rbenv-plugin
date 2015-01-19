@@ -21,7 +21,7 @@ module Rbenv
       detect_version!
 
       # To avoid starting multiple build jobs, acquire lock during installation
-      synchronize("#{rbenv_root}.lock") do
+      synchronize("#{rbenv_root}.lock", build.workspace.to_s) do
         versions = capture(rbenv("versions", "--bare")).strip.split
         unless versions.include?(version)
           update!
@@ -38,6 +38,10 @@ module Rbenv
       build.env["PATH+RBENV_BIN"] = "#{rbenv_root}/bin"
       # Set ${RBENV_ROOT}/bin in $PATH to allow invoke binstubs from shell
       build.env["PATH+RBENV_SHIMS"] = "#{rbenv_root}/shims"
+    end
+
+    def teardown!
+      release_lock("#{rbenv_root}.lock", build.workspace.to_s)
     end
 
     private
@@ -93,7 +97,7 @@ module Rbenv
       gem_list.split(",").each do |gem|
         unless list.include?(gem)
           listener << "Installing #{gem}..."
-          run(rbenv("exec", "gem", "install", gem), {out: listener})
+          run(rbenv("exec", "gem", "install", "--no-rdoc", "--no-ri", gem), {out: listener})
           listener << "Installed #{gem}."
         end
       end

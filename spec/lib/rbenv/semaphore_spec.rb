@@ -17,17 +17,20 @@ describe Rbenv::Semaphore do
 
   it "should acquire lock" do
     rbenv.should_receive(:test).with("mkdir true").and_return(true)
-    rbenv.acquire_lock("true")
+    rbenv.should_receive(:run).with("touch foobar/.rbenv_hold_lock")
+    rbenv.acquire_lock("true","foobar")
   end
 
   it "should not acquire lock" do
     rbenv.should_receive(:test).with("mkdir false").and_return(false)
-    lambda { rbenv.acquire_lock("false", release_options) }.should raise_error(Rbenv::LockError)
+    lambda { rbenv.acquire_lock("false","foobar", release_options) }.should raise_error(Rbenv::LockError)
   end
 
   it "should release lock" do
+    rbenv.should_receive(:test).with("test -f 'foobar/.rbenv_hold_lock'").and_return(true)
+    rbenv.should_receive(:run).with("rm foobar/.rbenv_hold_lock").and_return(true)
     rbenv.should_receive(:test).with("rm -rf true").and_return(true)
-    rbenv.release_lock("true")
+    rbenv.release_lock("true","foobar")
   end
 
 end
