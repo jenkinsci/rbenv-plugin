@@ -12,6 +12,7 @@ class RbenvDescriptor < Jenkins::Model::DefaultDescriptor
   DEFAULT_RBENV_REVISION = "master"
   DEFAULT_RUBY_BUILD_REPOSITORY = "https://github.com/sstephenson/ruby-build.git"
   DEFAULT_RUBY_BUILD_REVISION = "master"
+  DEFAULT_CONFIGURE_OPTS = ""
 
   include Jenkins::RackSupport
   def call(env)
@@ -48,6 +49,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
   attr_accessor :rbenv_revision
   attr_accessor :ruby_build_repository
   attr_accessor :ruby_build_revision
+  attr_accessor :configure_opts
 
   # Will be invoked by jruby-xstream after deserialization from configuration file.
   def read_completed()
@@ -71,6 +73,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
       "rbenv_revision" => @rbenv_revision,
       "ruby_build_repository" => @ruby_build_repository,
       "ruby_build_revision" => @ruby_build_revision,
+      "configure_opts" => @configure_opts,
     }
   end
 
@@ -84,6 +87,7 @@ class RbenvWrapper < Jenkins::Tasks::BuildWrapper
     @rbenv_revision = string(hash.fetch("rbenv_revision", @rbenv_revision), RbenvDescriptor::DEFAULT_RBENV_REVISION)
     @ruby_build_repository = string(hash.fetch("ruby_build_repository", @ruby_build_repository), RbenvDescriptor::DEFAULT_RUBY_BUILD_REPOSITORY)
     @ruby_build_revision = string(hash.fetch("ruby_build_revision", @ruby_build_revision), RbenvDescriptor::DEFAULT_RUBY_BUILD_REVISION)
+    @configure_opts = string(hash.fetch("configure_opts", @configure_opts), RbenvDescriptor::DEFAULT_CONFIGURE_OPTS)
   end
 
   # Jenkins may return empty string as attribute value which we must ignore

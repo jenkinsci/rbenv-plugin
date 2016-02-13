@@ -19,6 +19,9 @@ f.advanced do
   f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
     f.textbox(:default => descriptor.class.const_get(:DEFAULT_RBENV_ROOT), :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkRbenvRoot?value='+encodeURIComponent(this.value)")
   end
+  f.entry(:title => "CONFIGURE_OPTS", :field => "configure_opts") do
+    f.textbox(:default => descriptor.class.const_get(:DEFAULT_CONFIGURE_OPTS))
+  end
   f.entry(:title => "rbenv.git", :field => "rbenv_repository") do
     f.textbox(:default => descriptor.class.const_get(:DEFAULT_RBENV_REPOSITORY))
   end
