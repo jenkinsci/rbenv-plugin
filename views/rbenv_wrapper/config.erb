@@ -22,6 +22,9 @@ f.advanced do
   f.entry(:title => "CONFIGURE_OPTS", :field => "configure_opts") do
     f.textbox(:default => descriptor.class.const_get(:DEFAULT_CONFIGURE_OPTS))
   end
+  f.entry(:title => "RUBY_CONFIGURE_OPTS", :field => "ruby_configure_opts") do
+    f.textbox(:default => descriptor.class.const_get(:DEFAULT_RUBY_CONFIGURE_OPTS))
+  end
   f.entry(:title => "rbenv.git", :field => "rbenv_repository") do
     f.textbox(:default => descriptor.class.const_get(:DEFAULT_RBENV_REPOSITORY))
   end
