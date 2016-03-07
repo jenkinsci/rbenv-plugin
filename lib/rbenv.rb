@@ -103,7 +103,11 @@ module Rbenv
     end
 
     def rbenv(*args)
-      (["env", "RBENV_ROOT=#{rbenv_root}", "RBENV_VERSION=#{version}", "#{rbenv_root}/bin/rbenv"] + args).shelljoin
+      (["env", "RBENV_ROOT=#{rbenv_root}",
+               "RBENV_VERSION=#{version}",
+               "CONFIGURE_OPTS=#{configure_opts}",
+               "RUBY_CONFIGURE_OPTS=#{ruby_configure_opts}",
+               "#{rbenv_root}/bin/rbenv"] + args).shelljoin
     end
 
     def plugin_path(name)
