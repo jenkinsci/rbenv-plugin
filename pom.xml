@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkinsci.plugins</groupId>
   <artifactId>rbenv</artifactId>
-  <version>0.0.16</version>
+  <version>0.0.17</version>
   <name>rbenv plugin</name>
   <description>Run Jenkins builds in rbenv</description>
   <url>https://github.com/jenkinsci/rbenv-plugin</url>
