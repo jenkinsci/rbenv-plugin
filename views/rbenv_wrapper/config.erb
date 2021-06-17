@@ -5,7 +5,7 @@ f.entry(:title => "The Ruby version", :field => "version") do
   # descendant of hudson.model.Descriptor.
   # Since JRuby objects do not respond to Java refrections expectedly,
   # we must specify :checkUrl explicitly as an option of textbox.
-  f.textbox(:default => descriptor.class.const_get(:DEFAULT_VERSION), :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkVersion?value='+encodeURIComponent(this.value)")
+  f.textbox(:default => descriptor.class.const_get(:DEFAULT_VERSION), :checkMethod => "get", :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkVersion?value='+encodeURIComponent(this.value)")
 end
 f.advanced do
   f.entry(:title => "Ignore local version", :field => "ignore_local_version") do
@@ -17,7 +17,7 @@ f.entry(:title => "Preinstall gem list", :field => "gem_list") do
 end
 f.advanced do
   f.entry(:title => "RBENV_ROOT", :field => "rbenv_root") do
-    f.textbox(:default => descriptor.class.const_get(:DEFAULT_RBENV_ROOT), :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkRbenvRoot?value='+encodeURIComponent(this.value)")
+    f.textbox(:default => descriptor.class.const_get(:DEFAULT_RBENV_ROOT), :checkMethod => "get", :checkUrl => "'#{rootURL}/descriptorByName/rbenv-RbenvWrapper/checkRbenvRoot?value='+encodeURIComponent(this.value)")
   end
   f.entry(:title => "CONFIGURE_OPTS", :field => "configure_opts") do
     f.textbox(:default => descriptor.class.const_get(:DEFAULT_CONFIGURE_OPTS))
